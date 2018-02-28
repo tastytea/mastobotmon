@@ -30,6 +30,7 @@ using std::string;
 using std::cout;
 using std::cin;
 using std::cerr;
+using std::uint16_t;
 
 bool read_config(rapidjson::Document &document)
 {
@@ -50,6 +51,12 @@ bool read_config(rapidjson::Document &document)
         if (!document["accounts"].IsObject())
         {
             cerr << "ERROR: \"accounts\" not found\n";
+            return false;
+        }
+
+        if (!document["mode"].IsString())
+        {
+            cerr << "ERROR: \"mode\" not found\n";
             return false;
         }
 
@@ -87,10 +94,17 @@ bool read_config(rapidjson::Document &document)
                 cout << "Minutes af allowed inactivity: ";
                 std::getline(cin, minutes);
                 writer.Key(account.c_str());
+                writer.StartObject();
+                writer.Key("minutes");
                 writer.Uint(std::stoi(minutes));
+                writer.Key("access_token");
+                writer.String(get_access_token(account).c_str());
+                writer.EndObject();
             }
             writer.EndObject();
 
+            writer.Key("mode");
+            writer.String("cron");
             writer.Key("daemon_check");
             writer.Uint(10);
             writer.EndObject();
@@ -110,3 +124,32 @@ bool read_config(rapidjson::Document &document)
     return true;
 }
 
+const string get_access_token(const string &account)
+{
+    const string instance = account.substr(account.find('@') + 1);
+    Account acc(instance, "");
+    uint16_t ret;
+    string client_id;
+    string client_secret;
+    string url;
+    string code;
+    string access_token = "";
+
+    ret = acc.register_app1("mastobotmon", "urn:ietf:wg:oauth:2.0:oob", "read",
+                            "https://github.com/tastytea/mastobotmon",
+                            client_id, client_secret, url);
+    if (ret == 0)
+    {
+        cout << "Visit " << url << " and paste the generated code\nhere: ";
+        cin >> code;
+        ret = acc.register_app2(client_id, client_secret, "urn:ietf:wg:oauth:2.0:oob",
+                                code, access_token);
+        if (ret == 0)
+        {
+            return access_token;
+        }
+    }
+
+    cerr << "Error: " << ret << '\n';
+    return "";
+}

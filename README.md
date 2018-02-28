@@ -7,7 +7,7 @@
  * Tested OS: Linux
  * C++ compiler (tested: gcc 6.4, clang 5.0)
  * [cmake](https://cmake.org/) (tested: 3.9.6)
- * [mastodon-cpp](https://github.com/tastytea/mastodon-cpp) (tested: 0.4.3)
+ * [mastodon-cpp](https://github.com/tastytea/mastodon-cpp) (tested: 0.4.4)
  * [rapidjson](http://rapidjson.org/) (tested: 1.1.0)
 
 ## Get sourcecode

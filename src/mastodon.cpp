@@ -14,29 +14,28 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef mastobotmon_HPP
-#define mastobotmon_HPP
-
+#include <iostream>
 #include <string>
 #include <cstdint>
-#include <rapidjson/document.h>
 #include <mastodon-cpp.hpp>
+#include "version.hpp"
+#include "mastobotmon.hpp"
 
-using std::uint16_t;
+using std::cout;
+using std::cerr;
+using std::cin;
 using std::string;
+using std::uint16_t;
 
-bool read_config(rapidjson::Document &document);
-const string get_access_token(const string &account);
-
-class Account : public Mastodon::API
+Account::Account(const string &instance, const string &access_token)
+: API(instance, access_token)
+, _minutes(0)
+, _access_token("")
 {
-public:
-    explicit Account(const string &instance, const string &access_token);
-    void set_minutes(uint16_t minutes);
+    //
+}
 
-private:
-    uint16_t _minutes;
-    string _access_token;
-};
-
-#endif // mastobotmon_HPP
+void Account::set_minutes(uint16_t minutes)
+{
+    _minutes = minutes;
+}

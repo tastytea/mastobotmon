@@ -17,12 +17,11 @@
 #include <iostream>
 #include <string>
 #include <cstdint>
-#include <mastodon-cpp.hpp>
+#include <vector>
 #include <rapidjson/document.h>
 #include "version.hpp"
 #include "mastobotmon.hpp"
 
-using Mastodon::API;
 using std::cout;
 using std::cerr;
 using std::cin;
@@ -36,9 +35,36 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    std::vector<Account> accounts;
+
     for (const auto &member : document["accounts"].GetObject())
     {
-        cout << member.name.GetString() << ": " << member.value.GetUint() << '\n';
+        // Construct an Account object for every account
+        string instance = member.name.GetString();
+        instance = instance.substr(instance.find('@') + 1);
+        Account acc(instance, member.value["access_token"].GetString());
+        acc.set_minutes(member.value["minutes"].GetUint());
+        accounts.push_back(acc);
+    }
+
+    cout << "DEBUG\n";
+    if (document["mode"] == "cron")
+    {
+        cout << "DEBUG\n";
+        for (Account &acc : accounts)
+        {
+            cout << "DEBUG\n";
+            std::string answer;
+            // std::string id;
+
+            // Account::parametermap parameters(
+            // {
+            //     { "limit", { "1" } }
+            // });
+            // cout << acc.get(Mastodon::API::v1::statuses, id, parameters, answer);
+            cout << acc.get(Mastodon::API::v1::accounts_verify_credentials, answer);
+            cout << answer << '\n';
+        }
     }
 
     return 0;
