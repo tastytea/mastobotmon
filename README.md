@@ -7,7 +7,7 @@
  * Tested OS: Linux
  * C++ compiler (tested: gcc 6.4, clang 5.0)
  * [cmake](https://cmake.org/) (tested: 3.9.6)
- * [mastodon-cpp](https://github.com/tastytea/mastodon-cpp) (tested: 0.4.4)
+ * [mastodon-cpp](https://github.com/tastytea/mastodon-cpp) (at least: 0.4.4)
  * [rapidjson](http://rapidjson.org/) (tested: 1.1.0)
 
 ## Get sourcecode
@@ -34,6 +34,16 @@ Install with `make install`.
 Run mastobotmon once. Edit config file (`~/.config/mastobotmon.json`).
 Call mastobotmon from cron.
 
+## Error codes
+
+Same as [mastodon-cpp](https://github.com/tastytea/mastodon-cpp/blob/master/README.md#error-codes), plus:
+
+|      Code | Explanation                   |
+| --------: |:------------------------------|
+|         1 | Couldn't read / create config |
+
+If you use a debug build, you get more verbose error messages.
+
 # TODO
 
 * Version 0.1.0
@@ -48,12 +58,6 @@ Call mastobotmon from cron.
     * [ ] Daemon mode
 * Version 0.5.0
     * [ ] Allow to run command on alert
-
-## Error codes
-
-Same as [mastodon-cpp](https://github.com/tastytea/mastodon-cpp/blob/master/README.md#error-codes)
-
-If you use a debug build, you get more verbose error messages.
 
 # Copyright
 
