@@ -36,7 +36,6 @@ public:
 
 private:
     uint16_t _minutes;
-    string _access_token;
 };
 
 #endif // mastobotmon_HPP

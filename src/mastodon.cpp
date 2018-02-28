@@ -30,7 +30,6 @@ using std::uint16_t;
 Account::Account(const string &instance, const string &access_token)
 : API(instance, access_token)
 , _minutes(0)
-, _access_token("")
 {
     //
 }

@@ -39,31 +39,45 @@ int main(int argc, char *argv[])
 
     for (const auto &member : document["accounts"].GetObject())
     {
-        // Construct an Account object for every account
+        // Construct an Account object for every account and store it in a vector
         string instance = member.name.GetString();
         instance = instance.substr(instance.find('@') + 1);
-        Account acc(instance, member.value["access_token"].GetString());
-        acc.set_minutes(member.value["minutes"].GetUint());
-        accounts.push_back(acc);
+
+        Account *acc = new Account(instance, member.value["access_token"].GetString());
+        acc->set_useragent("mastobotmon/" + string(global::version));
+        acc->set_minutes(member.value["minutes"].GetUint());
+        accounts.push_back(*acc);
     }
 
-    cout << "DEBUG\n";
     if (document["mode"] == "cron")
     {
-        cout << "DEBUG\n";
         for (Account &acc : accounts)
         {
-            cout << "DEBUG\n";
             std::string answer;
-            // std::string id;
+            uint16_t ret = acc.get(Mastodon::API::v1::accounts_verify_credentials, answer);
+            if (ret == 0)
+            {
+                rapidjson::Document json;
+                json.Parse(answer.c_str());
+                const string id = json["id"].GetString();
 
-            // Account::parametermap parameters(
-            // {
-            //     { "limit", { "1" } }
-            // });
-            // cout << acc.get(Mastodon::API::v1::statuses, id, parameters, answer);
-            cout << acc.get(Mastodon::API::v1::accounts_verify_credentials, answer);
-            cout << answer << '\n';
+                Account::parametermap parameters(
+                {
+                    { "limit", { "1" } }
+                });
+                ret = acc.get(Mastodon::API::v1::accounts_id_statuses, id, parameters, answer);
+                if (ret == 0)
+                {
+                    json.Parse(answer.c_str());
+                    cout << "The last toot of " << json[0]["account"]["acct"].GetString()
+                         << " was at " << json[0]["created_at"].GetString() << ".\n";
+                }
+            }
+
+            if (ret != 0)
+            {
+                cerr << "Error: " << ret << '\n';
+            }
         }
     }
 

@@ -128,6 +128,7 @@ const string get_access_token(const string &account)
 {
     const string instance = account.substr(account.find('@') + 1);
     Account acc(instance, "");
+    acc.set_useragent("mastobotmon/" + string(global::version));
     uint16_t ret;
     string client_id;
     string client_secret;

@@ -38,7 +38,7 @@ Call mastobotmon from cron.
 
 * Version 0.1.0
     * [ ] Cron mode
-    * [ ] Config file
+    * [x] Config file
     * [ ] Alert if account seems inactive
 * Version 0.2.0
     * [ ] Write mentions to file
