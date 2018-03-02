@@ -17,6 +17,8 @@
 #ifndef mastobotmon_HPP
 #define mastobotmon_HPP
 
+#define RAPIDJSON_HAS_STDSTRING 1
+
 #include <string>
 #include <cstdint>
 #include <rapidjson/document.h>
@@ -25,8 +27,10 @@
 using std::uint16_t;
 using std::string;
 
-bool read_config(rapidjson::Document &document);
+const bool read_config(rapidjson::Document &document);
 const string get_access_token(const string &account);
+const bool add_account(rapidjson::Document &document);
+const bool write_config(rapidjson::Document &document);
 
 class Account : public Mastodon::API
 {

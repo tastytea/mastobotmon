@@ -14,6 +14,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define RAPIDJSON_HAS_STDSTRING 1
+
 #include <iostream>
 #include <string>
 #include <cstring>  // strlen()
@@ -32,9 +34,10 @@ using std::cin;
 using std::cerr;
 using std::uint16_t;
 
-bool read_config(rapidjson::Document &document)
+const string filepath = string(std::getenv("HOME")) + "/.config/mastobotmon.json";
+
+const bool read_config(rapidjson::Document &document)
 {
-    const string filepath = string(std::getenv("HOME")) + "/.config/mastobotmon.json";
     std::ifstream file(filepath);
     std::stringstream json;
 
@@ -70,55 +73,17 @@ bool read_config(rapidjson::Document &document)
     {
         cout << "No config file found. Creating new one.\n";
 
-        std::ofstream outfile(filepath);
-        if (outfile.is_open())
-        {
-            cout << "Adding accounts (user@domain), blank line to stop.\n";
-            rapidjson::StringBuffer buffer;
-            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-            string account;
-            string minutes;
+        rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
 
-            writer.StartObject();
-            writer.Key("accounts");
-            writer.StartObject();
+        document.SetObject();
+        rapidjson::Value object(rapidjson::kObjectType);
+        document.AddMember("accounts", object.Move(), allocator);
+        add_account(document);
 
-            while (true)
-            {
-                cout << "Add Account: ";
-                std::getline(cin, account);
-                if (account.empty())
-                {
-                    break;
-                }
-                cout << "Minutes af allowed inactivity: ";
-                std::getline(cin, minutes);
-                writer.Key(account.c_str());
-                writer.StartObject();
-                writer.Key("minutes");
-                writer.Uint(std::stoi(minutes));
-                writer.Key("access_token");
-                writer.String(get_access_token(account).c_str());
-                writer.EndObject();
-            }
-            writer.EndObject();
+        document.AddMember("mode", "cron", allocator);
+        document.AddMember("daemon_check", 10, allocator);
 
-            writer.Key("mode");
-            writer.String("cron");
-            writer.Key("daemon_check");
-            writer.Uint(10);
-            writer.EndObject();
-
-            outfile.write(buffer.GetString(), std::strlen(buffer.GetString()));
-            outfile.close();
-
-            if (!document.Parse(buffer.GetString()).HasParseError())
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return write_config(document);
     }
 
     return true;
@@ -153,4 +118,54 @@ const string get_access_token(const string &account)
 
     cerr << "Error: " << ret << '\n';
     return "";
+}
+
+const bool add_account(rapidjson::Document &document)
+{
+    string account;
+    string minutes;
+    string access_token;
+    rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
+
+    cout << "Adding accounts (user@domain), blank line to stop.\n";
+    while (true)
+    {
+        cout << "Add Account: ";
+        std::getline(cin, account);
+        if (account.empty())
+        {
+            break;
+        }
+        cout << "Minutes af allowed inactivity: ";
+        std::getline(cin, minutes);
+        access_token = get_access_token(account);
+
+        rapidjson::Value vobject(rapidjson::kObjectType);
+        rapidjson::Value vaccount(account, allocator);
+        rapidjson::Value vaccess_token(access_token, allocator);
+
+        vobject.AddMember("minutes", std::stoi(minutes), allocator);
+        vobject.AddMember("access_token", vaccess_token.Move(), allocator);
+        document["accounts"].AddMember(vaccount.Move(), vobject, allocator);
+    }
+
+    return write_config(document);
+}
+
+const bool write_config(rapidjson::Document &document)
+{
+    rapidjson::StringBuffer buffer;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    document.Accept(writer);
+
+    std::ofstream outfile(filepath);
+    if (outfile.is_open())
+    {
+        outfile.write(buffer.GetString(), std::strlen(buffer.GetString()));
+        outfile.close();
+
+        return true;
+    }
+
+    return false;
 }

@@ -14,8 +14,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define RAPIDJSON_HAS_STDSTRING 1
+
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <cstdint>
 #include <vector>
 #include <chrono>
@@ -38,6 +41,14 @@ int main(int argc, char *argv[])
     if (!read_config(document))
     {
         return 1;
+    }
+
+    if (argc > 1)
+    {
+        if ((std::strncmp(argv[1], "add", 3)) == 0)
+        {
+            add_account(document);
+        }
     }
 
     std::vector<Account> accounts;

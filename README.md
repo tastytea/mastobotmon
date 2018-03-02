@@ -32,7 +32,11 @@ Install with `make install`.
 # Usage
 
 Run mastobotmon once. Edit config file (`~/.config/mastobotmon.json`).
-Call mastobotmon from cron.
+Call mastobotmon from cron. If a bot is inactive for longer than the specified
+minutes, it prints an alert to stdout.
+
+## Commands
+* add – Add accounts
 
 ## Error codes
 
@@ -51,7 +55,7 @@ If you use a debug build, you get more verbose error messages.
     * [x] Config file
     * [x] Alert if account seems inactive
 * Version 0.2.0
-    * [ ] Allow to add accounts later
+    * [x] Allow to add accounts later
     * [ ] Write mentions to file
 * Version 0.3.0
     * [ ] Write statistics to file
