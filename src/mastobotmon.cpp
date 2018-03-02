@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
                     std::istringstream isslast(json[0]["created_at"].GetString());
                     struct std::tm tm = {0};
                     isslast >> std::get_time(&tm, "%Y-%m-%dT%T");
-                    std::time_t time = mktime(&tm);
+                    std::time_t time = timegm(&tm);
 
                     const auto now = std::chrono::system_clock::now();
                     const auto last = std::chrono::system_clock::from_time_t(time);
