@@ -98,7 +98,29 @@ int main(int argc, char *argv[])
 
                     if (elapsed.count() > acc.get_minutes())
                     {
-                        cout << "ALERT: " << acct << " is inactive since " << elapsed.count() << " minutes.\n";
+                        uint16_t minutes = elapsed.count();
+                        std::uint8_t hours = 0;
+                        std:: uint8_t days = 0;
+                        while (minutes >= 1440)
+                        {
+                            minutes -= 1440;
+                            days += 1;
+                        }
+                        while (minutes >= 60)
+                        {
+                            minutes -= 60;
+                            hours += 1;
+                        }
+                        cout << "ALERT: " << acct << " is inactive since ";
+                        if (days > 0)
+                        {
+                            cout << std::to_string(days) << " days, ";
+                        }
+                        if (hours > 0)
+                        {
+                            cout << std::to_string(hours) << " hours and ";
+                        }
+                        cout << std::to_string(minutes) << " minutes.\n";
                     }
                 }
             }

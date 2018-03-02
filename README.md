@@ -58,6 +58,7 @@ If you use a debug build, you get more verbose error messages.
     * [x] Allow to add accounts later
     * [ ] Write mentions to file
 * Version 0.3.0
+    * [ ] Respect X-RateLimit header
     * [ ] Write statistics to file
 * Version 0.4.0
     * [ ] Daemon mode
