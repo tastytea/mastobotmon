@@ -32,7 +32,8 @@ class Account : public Mastodon::API
 {
 public:
     explicit Account(const string &instance, const string &access_token);
-    void set_minutes(uint16_t minutes);
+    const void set_minutes(uint16_t minutes);
+    const uint16_t get_minutes() const;
 
 private:
     uint16_t _minutes;

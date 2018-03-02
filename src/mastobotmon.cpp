@@ -18,6 +18,10 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include <chrono>
+#include <ctime>
+#include <sstream>
+#include <iomanip>  // get_time
 #include <rapidjson/document.h>
 #include "version.hpp"
 #include "mastobotmon.hpp"
@@ -26,6 +30,7 @@ using std::cout;
 using std::cerr;
 using std::cin;
 using std::string;
+using std::uint16_t;
 
 int main(int argc, char *argv[])
 {
@@ -69,8 +74,21 @@ int main(int argc, char *argv[])
                 if (ret == 0)
                 {
                     json.Parse(answer.c_str());
-                    cout << "The last toot of " << json[0]["account"]["acct"].GetString()
-                         << " was at " << json[0]["created_at"].GetString() << ".\n";
+                    const string acct = json[0]["account"]["acct"].GetString();
+
+                    std::istringstream isslast(json[0]["created_at"].GetString());
+                    struct std::tm tm = {0};
+                    isslast >> std::get_time(&tm, "%Y-%m-%dT%T");
+                    std::time_t time = mktime(&tm);
+
+                    const auto now = std::chrono::system_clock::now();
+                    const auto last = std::chrono::system_clock::from_time_t(time);
+                    auto elapsed = std::chrono::duration_cast<std::chrono::minutes>(now - last);
+
+                    if (elapsed.count() > acc.get_minutes())
+                    {
+                        cout << "ALERT: " << acct << " is inactive since " << elapsed.count() << " minutes.\n";
+                    }
                 }
             }
 

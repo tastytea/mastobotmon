@@ -47,10 +47,11 @@ If you use a debug build, you get more verbose error messages.
 # TODO
 
 * Version 0.1.0
-    * [ ] Cron mode
+    * [x] Cron mode
     * [x] Config file
-    * [ ] Alert if account seems inactive
+    * [x] Alert if account seems inactive
 * Version 0.2.0
+    * [ ] Allow to add accounts later
     * [ ] Write mentions to file
 * Version 0.3.0
     * [ ] Write statistics to file

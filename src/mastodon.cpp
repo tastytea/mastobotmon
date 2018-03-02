@@ -34,7 +34,12 @@ Account::Account(const string &instance, const string &access_token)
     //
 }
 
-void Account::set_minutes(uint16_t minutes)
+const void Account::set_minutes(uint16_t minutes)
 {
     _minutes = minutes;
+}
+
+const uint16_t Account::get_minutes() const
+{
+    return _minutes;
 }
