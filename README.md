@@ -54,6 +54,7 @@ If you use a debug build, you get more verbose error messages.
        "accounts" : {
           "account1@example.social" : {
              "access_token" : "xxxx",
+             // Alert after this many minutes of inactivity
              "minutes" : 720
           },
           "account2@example.social" : {
@@ -61,8 +62,11 @@ If you use a debug build, you get more verbose error messages.
              "minutes" : 1450
           }
        },
-       "daemon_check" : 10,
+       // In daemon mode, check every x minutes
+       "daemon_check" : 60,
+       // This is the directory where the mentions and statistics will be stored.
        "data_dir" : "/home/user/mastobotmon",
+       // Possible values: cron (daemon mode later)
        "mode" : "cron"
     }
 

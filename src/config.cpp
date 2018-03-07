@@ -16,7 +16,6 @@
 
 #include <iostream>
 #include <string>
-#include <cstring>  // strlen()
 #include <cstdlib>  // getenv()
 #include <fstream>
 #include <sstream>
@@ -32,7 +31,7 @@ using std::uint16_t;
 
 const string filepath = string(std::getenv("HOME")) + "/.config/mastobotmon.json";
 
-const bool read_config(Json::Value &document)
+const bool read_config()
 {
     std::ifstream file(filepath);
     std::stringstream json;
@@ -44,31 +43,31 @@ const bool read_config(Json::Value &document)
 
         Json::Reader reader;
 
-        if (!reader.parse(json, document))
+        if (!reader.parse(json, config))
         {
             cerr << "ERROR: couldn't parse config file. Are you sure the JSON is well-formed?\n";
             return false;
         }
 
-        if (!document["accounts"].isObject())
+        if (!config["accounts"].isObject())
         {
             cerr << "ERROR: \"accounts\" not found\n";
             return false;
         }
 
-        if (!document["mode"].isString())
+        if (!config["mode"].isString())
         {
             cerr << "ERROR: \"mode\" not found\n";
             return false;
         }
 
-        if (!document["daemon_check"].isUInt())
+        if (!config["daemon_check"].isUInt())
         {
             cerr << "ERROR: \"daemon_check\" not found\n";
             return false;
         }
 
-        if (!document["data_dir"].isString())
+        if (!config["data_dir"].isString())
         {
             cerr << "ERROR: \"data_dir\" not found\n";
             return false;
@@ -78,13 +77,13 @@ const bool read_config(Json::Value &document)
     {
         cout << "No config file found. Creating new one.\n";
 
-        add_account(document);
+        add_account();
 
-        document["mode"] = "cron";
-        document["daemon_check"] = 10;
-        document["data_dir"] = ".";
+        config["mode"] = "cron";
+        config["daemon_check"] = 60;
+        config["data_dir"] = ".";
 
-        return write_config(document);
+        return write_config();
     }
 
     return true;
@@ -121,7 +120,7 @@ const string get_access_token(const string &account)
     return "";
 }
 
-const bool add_account(Json::Value &document)
+const bool add_account()
 {
     string account;
     string minutes;
@@ -140,17 +139,17 @@ const bool add_account(Json::Value &document)
         std::getline(cin, minutes);
         access_token = get_access_token(account);
 
-        document["accounts"][account]["minutes"] = std::stoi(minutes);
-        document["accounts"][account]["access_token"] = access_token;
+        config["accounts"][account]["minutes"] = std::stoi(minutes);
+        config["accounts"][account]["access_token"] = access_token;
     }
 
-    return write_config(document);
+    return write_config();
 }
 
-const bool write_config(Json::Value &document)
+const bool write_config()
 {
     Json::StyledWriter writer;
-    const string output = writer.write(document);
+    const string output = writer.write(config);
 
     std::ofstream outfile(filepath);
     if (outfile.is_open())

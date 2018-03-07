@@ -25,6 +25,8 @@
 using std::uint16_t;
 using std::string;
 
+extern Json::Value config;
+
 class Account : public Mastodon::API
 {
 public:
@@ -39,11 +41,11 @@ private:
     std::uint64_t _last_mention_id;
 };
 
-const bool read_config(Json::Value &document);
+const bool read_config();
 const string get_access_token(const string &account);
-const bool add_account(Json::Value &document);
-const bool write_config(Json::Value &document);
+const bool add_account();
+const bool write_config();
 
-const bool write_mentions(const string &filepath, Json::Value &mentions);
+const bool write_mentions(const string &straccount, Json::Value &mentions);
 
 #endif // mastobotmon_HPP

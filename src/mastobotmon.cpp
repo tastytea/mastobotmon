@@ -35,14 +35,16 @@ using std::cin;
 using std::string;
 using std::uint16_t;
 
-const bool write_mentions(const string &filepath, Json::Value &mentions)
+Json::Value config; // Declared in mastobotmon.hpp
+
+const bool write_mentions(const string &straccount, Json::Value &mentions)
 {
+    const string filepath = config["data_dir"].asString() + "/mentions_" + straccount + ".csv";
     const std::regex restrip("<[^>]*>");
 
     std::ofstream outfile(filepath, std::ios::app);
     if (outfile.is_open())
     {
-        cout << filepath << '\n';
         string output;
         for (auto &mention : mentions)
         {
@@ -53,20 +55,19 @@ const bool write_mentions(const string &filepath, Json::Value &mentions)
             outfile.write(output.c_str(), output.length());
         }
         outfile.close();
+        cout << "New mentions in: " << filepath << '\n';
 
         return true;
     }
-    cout << "NOT OPEN" << '\n';
-    cout << filepath << '\n';
 
+    cerr << "Error writing file: " << filepath << '\n';
     return false;
 }
 
 int main(int argc, char *argv[])
 {
-    Json::Value document;
     uint16_t mainret = 0;
-    if (!read_config(document))
+    if (!read_config())
     {
         return 1;
     }
@@ -75,13 +76,13 @@ int main(int argc, char *argv[])
     {
         if ((std::strncmp(argv[1], "add", 3)) == 0)
         {
-            add_account(document);
+            add_account();
         }
     }
 
     std::vector<Account> accounts;
 
-    for (auto it = document["accounts"].begin(); it != document["accounts"].end(); ++it)
+    for (auto it = config["accounts"].begin(); it != config["accounts"].end(); ++it)
     {
         // Construct an Account object for every account and store it in a vector
         string instance = it.name();
@@ -97,7 +98,7 @@ int main(int argc, char *argv[])
         accounts.push_back(*acc);
     }
 
-    if (document["mode"] == "cron")
+    if (config["mode"] == "cron")
     {
         for (Account &acc : accounts)
         {
@@ -165,8 +166,8 @@ int main(int argc, char *argv[])
                             const std::uint64_t lastid = std::stoull(json[0]["id"].asString());
                             const string straccount = acct + "@" + acc.get_instance();
                             acc.set_last_mention_id(lastid);
-                            document["accounts"][straccount]["last_mention"] = lastid;
-                            write_mentions(document["data_dir"].asString() + "/mentions_" + straccount + ".csv", json);
+                            config["accounts"][straccount]["last_mention"] = lastid;
+                            write_mentions(straccount, json);
                         }
                     }
                 }
@@ -180,7 +181,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!write_config(document))
+    if (!write_config())
     {
         cerr << "Couldn't write config file\n";
     }
