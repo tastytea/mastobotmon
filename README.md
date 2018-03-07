@@ -7,7 +7,7 @@
  * Tested OS: Linux
  * C++ compiler (tested: gcc 6.4, clang 5.0)
  * [cmake](https://cmake.org/) (tested: 3.9.6)
- * [mastodon-cpp](https://github.com/tastytea/mastodon-cpp) (at least: 0.4.4)
+ * [mastodon-cpp](https://github.com/tastytea/mastodon-cpp) (at least: 0.6.0)
  * [jsoncpp](https://github.com/open-source-parsers/jsoncpp) (tested: 1.8.1)
 
 ## Get sourcecode
@@ -48,6 +48,28 @@ Same as [mastodon-cpp](https://github.com/tastytea/mastodon-cpp/blob/master/READ
 
 If you use a debug build, you get more verbose error messages.
 
+## Example config file
+
+    {
+       "accounts" : {
+          "account1@example.social" : {
+             "access_token" : "xxxx",
+             "minutes" : 720
+          },
+          "account2@example.social" : {
+             "access_token" : "yyyy",
+             "minutes" : 1450
+          }
+       },
+       "daemon_check" : 10,
+       "data_dir" : "/home/user/mastobotmon",
+       "mode" : "cron"
+    }
+
+## Mentions
+
+Mentions are written to `data_dir/mentions_account.csv`. The format is: acct;created_at;content.
+
 # TODO
 
 * Version 0.1.0
@@ -56,7 +78,7 @@ If you use a debug build, you get more verbose error messages.
     * [x] Alert if account seems inactive
 * Version 0.2.0
     * [x] Allow to add accounts later
-    * [ ] Write mentions to file
+    * [x] Write mentions to file
 * Version 0.3.0
     * [ ] Respect X-RateLimit header
     * [ ] Write statistics to file

@@ -30,6 +30,7 @@ using std::uint16_t;
 Account::Account(const string &instance, const string &access_token)
 : API(instance, access_token)
 , _minutes(0)
+, _last_mention_id(0)
 {
     //
 }
@@ -42,4 +43,19 @@ const void Account::set_minutes(uint16_t minutes)
 const uint16_t Account::get_minutes() const
 {
     return _minutes;
+}
+
+const uint16_t Account::get_mentions(string &answer)
+{
+    parametermap parameters =
+    {
+        { "since_id", { std::to_string(_last_mention_id) } },
+        { "exclude_types", { "follow", "favourite", "reblog" } }
+    };
+    return get(v1::notifications, parameters, answer);
+}
+
+const void Account::set_last_mention_id(const std::uint64_t &id)
+{
+    _last_mention_id = id;
 }

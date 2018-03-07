@@ -25,20 +25,25 @@
 using std::uint16_t;
 using std::string;
 
-const bool read_config(Json::Value &document);
-const string get_access_token(const string &account);
-const bool add_account(Json::Value &document);
-const bool write_config(Json::Value &document);
-
 class Account : public Mastodon::API
 {
 public:
     explicit Account(const string &instance, const string &access_token);
     const void set_minutes(uint16_t minutes);
     const uint16_t get_minutes() const;
+    const uint16_t get_mentions(string &answer);
+    const void set_last_mention_id(const std::uint64_t &id);
 
 private:
     uint16_t _minutes;
+    std::uint64_t _last_mention_id;
 };
+
+const bool read_config(Json::Value &document);
+const string get_access_token(const string &account);
+const bool add_account(Json::Value &document);
+const bool write_config(Json::Value &document);
+
+const bool write_mentions(const string &filepath, Json::Value &mentions);
 
 #endif // mastobotmon_HPP

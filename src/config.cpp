@@ -67,6 +67,12 @@ const bool read_config(Json::Value &document)
             cerr << "ERROR: \"daemon_check\" not found\n";
             return false;
         }
+
+        if (!document["data_dir"].isString())
+        {
+            cerr << "ERROR: \"data_dir\" not found\n";
+            return false;
+        }
     }
     else
     {
@@ -76,6 +82,7 @@ const bool read_config(Json::Value &document)
 
         document["mode"] = "cron";
         document["daemon_check"] = 10;
+        document["data_dir"] = ".";
 
         return write_config(document);
     }

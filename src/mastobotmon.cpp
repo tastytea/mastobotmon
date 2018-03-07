@@ -23,6 +23,8 @@
 #include <ctime>
 #include <sstream>
 #include <iomanip>  // get_time
+#include <fstream>
+#include <regex>
 #include <jsoncpp/json/json.h>
 #include "version.hpp"
 #include "mastobotmon.hpp"
@@ -33,9 +35,37 @@ using std::cin;
 using std::string;
 using std::uint16_t;
 
+const bool write_mentions(const string &filepath, Json::Value &mentions)
+{
+    const std::regex restrip("<[^>]*>");
+
+    std::ofstream outfile(filepath, std::ios::app);
+    if (outfile.is_open())
+    {
+        cout << filepath << '\n';
+        string output;
+        for (auto &mention : mentions)
+        {
+            output = mention["status"]["account"]["acct"].asString() + ';';
+            output += mention["status"]["created_at"].asString() + ';';
+            output += mention["status"]["content"].asString() + '\n';
+            output = std::regex_replace(output, restrip, "");
+            outfile.write(output.c_str(), output.length());
+        }
+        outfile.close();
+
+        return true;
+    }
+    cout << "NOT OPEN" << '\n';
+    cout << filepath << '\n';
+
+    return false;
+}
+
 int main(int argc, char *argv[])
 {
     Json::Value document;
+    uint16_t mainret = 0;
     if (!read_config(document))
     {
         return 1;
@@ -60,6 +90,10 @@ int main(int argc, char *argv[])
         Account *acc = new Account(instance, (*it)["access_token"].asString());
         acc->set_useragent("mastobotmon/" + string(global::version));
         acc->set_minutes((*it)["minutes"].asUInt());
+        if (!(*it)["last_mention"].empty())
+        {
+            acc->set_last_mention_id((*it)["last_mention"].asUInt64());
+        }
         accounts.push_back(*acc);
     }
 
@@ -121,15 +155,34 @@ int main(int argc, char *argv[])
                         }
                         cout << std::to_string(minutes) << " minutes.\n";
                     }
+
+                    ret = acc.get_mentions(answer);
+                    if (ret == 0)
+                    {
+                        reader.parse(answer, json);
+                        if (!json.empty())
+                        {
+                            const std::uint64_t lastid = std::stoull(json[0]["id"].asString());
+                            const string straccount = acct + "@" + acc.get_instance();
+                            acc.set_last_mention_id(lastid);
+                            document["accounts"][straccount]["last_mention"] = lastid;
+                            write_mentions(document["data_dir"].asString() + "/mentions_" + straccount + ".csv", json);
+                        }
+                    }
                 }
             }
 
             if (ret != 0)
             {
                 cerr << "Error: " << ret << '\n';
+                mainret = ret;
             }
         }
     }
 
-    return 0;
+    if (!write_config(document))
+    {
+        cerr << "Couldn't write config file\n";
+    }
+    return mainret;
 }
