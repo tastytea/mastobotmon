@@ -48,6 +48,7 @@ const bool read_config(rapidjson::Document &document)
 
         if (document.Parse(json.str().c_str()).HasParseError())
         {
+            cerr << "ERROR: couldn't parse config file. Are you sure the JSON is well-formed?\n";
             return false;
         }
 
