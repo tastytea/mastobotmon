@@ -8,7 +8,7 @@
  * C++ compiler (tested: gcc 6.4, clang 5.0)
  * [cmake](https://cmake.org/) (tested: 3.9.6)
  * [mastodon-cpp](https://github.com/tastytea/mastodon-cpp) (at least: 0.4.4)
- * [rapidjson](http://rapidjson.org/) (tested: 1.1.0)
+ * [jsoncpp](https://github.com/open-source-parsers/jsoncpp) (tested: 1.8.1)
 
 ## Get sourcecode
 

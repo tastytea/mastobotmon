@@ -14,17 +14,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define RAPIDJSON_HAS_STDSTRING 1
-
 #include <iostream>
 #include <string>
 #include <cstring>  // strlen()
 #include <cstdlib>  // getenv()
 #include <fstream>
 #include <sstream>
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/prettywriter.h>
+#include <jsoncpp/json/json.h>
 #include "version.hpp"
 #include "mastobotmon.hpp"
 
@@ -36,7 +32,7 @@ using std::uint16_t;
 
 const string filepath = string(std::getenv("HOME")) + "/.config/mastobotmon.json";
 
-const bool read_config(rapidjson::Document &document)
+const bool read_config(Json::Value &document)
 {
     std::ifstream file(filepath);
     std::stringstream json;
@@ -46,25 +42,27 @@ const bool read_config(rapidjson::Document &document)
         json << file.rdbuf();
         file.close();
 
-        if (document.Parse(json.str().c_str()).HasParseError())
+        Json::Reader reader;
+
+        if (!reader.parse(json, document))
         {
             cerr << "ERROR: couldn't parse config file. Are you sure the JSON is well-formed?\n";
             return false;
         }
 
-        if (!document["accounts"].IsObject())
+        if (!document["accounts"].isObject())
         {
             cerr << "ERROR: \"accounts\" not found\n";
             return false;
         }
 
-        if (!document["mode"].IsString())
+        if (!document["mode"].isString())
         {
             cerr << "ERROR: \"mode\" not found\n";
             return false;
         }
 
-        if (!document["daemon_check"].IsUint())
+        if (!document["daemon_check"].isUInt())
         {
             cerr << "ERROR: \"daemon_check\" not found\n";
             return false;
@@ -74,15 +72,10 @@ const bool read_config(rapidjson::Document &document)
     {
         cout << "No config file found. Creating new one.\n";
 
-        rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
-
-        document.SetObject();
-        rapidjson::Value object(rapidjson::kObjectType);
-        document.AddMember("accounts", object.Move(), allocator);
         add_account(document);
 
-        document.AddMember("mode", "cron", allocator);
-        document.AddMember("daemon_check", 10, allocator);
+        document["mode"] = "cron";
+        document["daemon_check"] = 10;
 
         return write_config(document);
     }
@@ -121,12 +114,11 @@ const string get_access_token(const string &account)
     return "";
 }
 
-const bool add_account(rapidjson::Document &document)
+const bool add_account(Json::Value &document)
 {
     string account;
     string minutes;
     string access_token;
-    rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
 
     cout << "Adding accounts (user@domain), blank line to stop.\n";
     while (true)
@@ -141,28 +133,22 @@ const bool add_account(rapidjson::Document &document)
         std::getline(cin, minutes);
         access_token = get_access_token(account);
 
-        rapidjson::Value vobject(rapidjson::kObjectType);
-        rapidjson::Value vaccount(account, allocator);
-        rapidjson::Value vaccess_token(access_token, allocator);
-
-        vobject.AddMember("minutes", std::stoi(minutes), allocator);
-        vobject.AddMember("access_token", vaccess_token.Move(), allocator);
-        document["accounts"].AddMember(vaccount.Move(), vobject, allocator);
+        document["accounts"][account]["minutes"] = std::stoi(minutes);
+        document["accounts"][account]["access_token"] = access_token;
     }
 
     return write_config(document);
 }
 
-const bool write_config(rapidjson::Document &document)
+const bool write_config(Json::Value &document)
 {
-    rapidjson::StringBuffer buffer;
-    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-    document.Accept(writer);
+    Json::StyledWriter writer;
+    const string output = writer.write(document);
 
     std::ofstream outfile(filepath);
     if (outfile.is_open())
     {
-        outfile.write(buffer.GetString(), std::strlen(buffer.GetString()));
+        outfile.write(output.c_str(), output.length());
         outfile.close();
 
         return true;

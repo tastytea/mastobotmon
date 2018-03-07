@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.7)
 project (mastobotmon
-         VERSION 0.1.3
+         VERSION 0.1.4
          LANGUAGES CXX)
 
 include(GNUInstallDirs)
@@ -19,5 +19,5 @@ configure_file (
 
 file(GLOB sources src/*.cpp)
 add_executable(mastobotmon ${sources})
-target_link_libraries(mastobotmon mastodon-cpp)
+target_link_libraries(mastobotmon mastodon-cpp jsoncpp)
 install(TARGETS mastobotmon DESTINATION ${CMAKE_INSTALL_BINDIR})

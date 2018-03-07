@@ -14,8 +14,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define RAPIDJSON_HAS_STDSTRING 1
-
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -25,7 +23,7 @@
 #include <ctime>
 #include <sstream>
 #include <iomanip>  // get_time
-#include <rapidjson/document.h>
+#include <jsoncpp/json/json.h>
 #include "version.hpp"
 #include "mastobotmon.hpp"
 
@@ -37,7 +35,7 @@ using std::uint16_t;
 
 int main(int argc, char *argv[])
 {
-    rapidjson::Document document;
+    Json::Value document;
     if (!read_config(document))
     {
         return 1;
@@ -53,15 +51,15 @@ int main(int argc, char *argv[])
 
     std::vector<Account> accounts;
 
-    for (const auto &member : document["accounts"].GetObject())
+    for (auto it = document["accounts"].begin(); it != document["accounts"].end(); ++it)
     {
         // Construct an Account object for every account and store it in a vector
-        string instance = member.name.GetString();
+        string instance = it.name();
         instance = instance.substr(instance.find('@') + 1);
 
-        Account *acc = new Account(instance, member.value["access_token"].GetString());
+        Account *acc = new Account(instance, (*it)["access_token"].asString());
         acc->set_useragent("mastobotmon/" + string(global::version));
-        acc->set_minutes(member.value["minutes"].GetUint());
+        acc->set_minutes((*it)["minutes"].asUInt());
         accounts.push_back(*acc);
     }
 
@@ -73,9 +71,10 @@ int main(int argc, char *argv[])
             uint16_t ret = acc.get(Mastodon::API::v1::accounts_verify_credentials, answer);
             if (ret == 0)
             {
-                rapidjson::Document json;
-                json.Parse(answer.c_str());
-                const string id = json["id"].GetString();
+                Json::Value json;
+                Json::Reader reader;
+                reader.parse(answer, json);
+                const string id = json["id"].asString();
 
                 Account::parametermap parameters(
                 {
@@ -84,10 +83,10 @@ int main(int argc, char *argv[])
                 ret = acc.get(Mastodon::API::v1::accounts_id_statuses, id, parameters, answer);
                 if (ret == 0)
                 {
-                    json.Parse(answer.c_str());
-                    const string acct = json[0]["account"]["acct"].GetString();
+                    reader.parse(answer, json);
+                    const string acct = json[0]["account"]["acct"].asString();
 
-                    std::istringstream isslast(json[0]["created_at"].GetString());
+                    std::istringstream isslast(json[0]["created_at"].asString());
                     struct std::tm tm = {0};
                     isslast >> std::get_time(&tm, "%Y-%m-%dT%T");
                     std::time_t time = timegm(&tm);
