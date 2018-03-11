@@ -45,6 +45,7 @@ Same as [mastodon-cpp](https://github.com/tastytea/mastodon-cpp/blob/master/READ
 |      Code | Explanation                   |
 | --------: |:------------------------------|
 |         1 | Couldn't read / create config |
+|         2 | Reached limit of API calls    |
 
 If you use a debug build, you get more verbose error messages.
 
@@ -84,7 +85,7 @@ Mentions are written to `data_dir/mentions_account.csv`. The format is: acct;cre
     * [x] Allow to add accounts later
     * [x] Write mentions to file
 * Version 0.3.0
-    * [ ] Respect X-RateLimit header
+    * [x] Respect X-RateLimit header
     * [ ] Write statistics to file
 * Version 0.4.0
     * [ ] Daemon mode
