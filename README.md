@@ -93,6 +93,7 @@ Statistics are written to `data_dir/statistics_account.csv`. The format is: time
     * [x] Write statistics to file
 * Version 0.4.0
     * [ ] Daemon mode
+    * [ ] Options to turn mention grabbing and statistics off
 * Version 0.5.0
     * [ ] Allow to run command on alert
 
