@@ -75,6 +75,10 @@ If you use a debug build, you get more verbose error messages.
 
 Mentions are written to `data_dir/mentions_account.csv`. The format is: acct;created_at;content.
 
+## Statistics
+
+Statistics are written to `data_dir/statistics_account.csv`. The format is: time;toots;followers.
+
 # TODO
 
 * Version 0.1.0
@@ -86,7 +90,7 @@ Mentions are written to `data_dir/mentions_account.csv`. The format is: acct;cre
     * [x] Write mentions to file
 * Version 0.3.0
     * [x] Respect X-RateLimit header
-    * [ ] Write statistics to file
+    * [x] Write statistics to file
 * Version 0.4.0
     * [ ] Daemon mode
 * Version 0.5.0

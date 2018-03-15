@@ -64,6 +64,33 @@ const bool write_mentions(const string &straccount, Json::Value &mentions)
     return false;
 }
 
+const bool write_statistics(const string &straccount, Json::Value &account_json)
+{
+    const string filepath = config["data_dir"].asString() + "/statistics_" + straccount + ".csv";
+
+    std::ofstream outfile(filepath, std::ios::app);
+    if (outfile.is_open())
+    {
+        string output;
+        std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+        std::time_t now_t = std::chrono::system_clock::to_time_t(now);
+        std::tm now_tm = *std::localtime(&now_t);
+        std::stringstream ss;
+
+        ss << std::put_time(&now_tm, "%Y-%m-%dT%T");
+        output = ss.str() + ';';
+        output += account_json["statuses_count"].asString() + ';';
+        output += account_json["followers_count"].asString() + ";\n";
+        outfile.write(output.c_str(), output.length());
+        outfile.close();
+
+        return true;
+    }
+
+    cerr << "Error writing file: " << filepath << '\n';
+    return false;
+}
+
 int main(int argc, char *argv[])
 {
     uint16_t mainret = 0;
@@ -116,6 +143,8 @@ int main(int argc, char *argv[])
                 Json::Reader reader;
                 reader.parse(answer, json);
                 const string id = json["id"].asString();
+                const string straccount = json["account"]["acct"].asString() + "@" + acc.get_instance();
+                write_statistics(straccount, json);
 
                 Account::parametermap parameters(
                 {
@@ -170,7 +199,6 @@ int main(int argc, char *argv[])
                         if (!json.empty())
                         {
                             const std::uint64_t lastid = std::stoull(json[0]["id"].asString());
-                            const string straccount = acct + "@" + acc.get_instance();
                             acc.set_last_mention_id(lastid);
                             config["accounts"][straccount]["last_mention"] = lastid;
                             write_mentions(straccount, json);

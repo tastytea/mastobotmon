@@ -47,5 +47,6 @@ const bool add_account();
 const bool write_config();
 
 const bool write_mentions(const string &straccount, Json::Value &mentions);
+const bool write_statistics(const string &straccount, Json::Value &account_json);
 
 #endif // mastobotmon_HPP
