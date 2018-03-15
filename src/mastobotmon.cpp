@@ -80,7 +80,7 @@ const bool write_statistics(const string &straccount, Json::Value &account_json)
         ss << std::put_time(&now_tm, "%Y-%m-%dT%T");
         output = ss.str() + ';';
         output += account_json["statuses_count"].asString() + ';';
-        output += account_json["followers_count"].asString() + ";\n";
+        output += account_json["followers_count"].asString() + '\n';
         outfile.write(output.c_str(), output.length());
         outfile.close();
 
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
                 Json::Reader reader;
                 reader.parse(answer, json);
                 const string id = json["id"].asString();
-                const string straccount = json["account"]["acct"].asString() + "@" + acc.get_instance();
+                const string straccount = json["acct"].asString() + "@" + acc.get_instance();
                 write_statistics(straccount, json);
 
                 Account::parametermap parameters(
