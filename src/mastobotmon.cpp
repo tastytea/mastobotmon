@@ -50,7 +50,8 @@ const bool write_mentions(const string &straccount, Json::Value &mentions)
         {
             output = mention["status"]["account"]["acct"].asString() + ';';
             output += mention["status"]["created_at"].asString() + ';';
-            output += mention["status"]["content"].asString() + '\n';
+            output += mention["status"]["content"].asString() + ';';
+            output += mention["status"]["url"].asString() + '\n';
             output = std::regex_replace(output, restrip, "");
             outfile.write(output.c_str(), output.length());
         }

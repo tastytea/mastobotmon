@@ -73,7 +73,7 @@ If you use a debug build, you get more verbose error messages.
 
 ## Mentions
 
-Mentions are written to `data_dir/mentions_account.csv`. The format is: acct;created_at;content.
+Mentions are written to `data_dir/mentions_account.csv`. The format is: acct;created_at;content;url.
 
 ## Statistics
 
