@@ -20,7 +20,7 @@
 #include <string>
 #include <cstdint>
 #include <jsoncpp/json/json.h>
-#include <mastodon-cpp.hpp>
+#include <mastodon-cpp/mastodon-cpp.hpp>
 
 using std::uint16_t;
 using std::string;

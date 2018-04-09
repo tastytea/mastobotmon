@@ -134,7 +134,8 @@ int main(int argc, char *argv[])
             uint16_t ret = acc.get(Mastodon::API::v1::accounts_verify_credentials, answer);
             if (ret == 0)
             {
-                if (std::stoi(acc.get_header("X-RateLimit-Remaining")) < 2)
+                if (!acc.get_header("X-RateLimit-Remaining").empty() &&
+                    std::stoi(acc.get_header("X-RateLimit-Remaining")) < 2)
                 {
                     cerr << "ERROR: Reached limit of API calls.\n";
                     cerr << "Counter will reset at " << acc.get_header("X-RateLimit-Reset") << '\n';
