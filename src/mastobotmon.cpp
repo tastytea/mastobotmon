@@ -142,8 +142,8 @@ int main(int argc, char *argv[])
                     return 2;
                 }
                 Json::Value json;
-                Json::Reader reader;
-                reader.parse(answer, json);
+                std::stringstream ss(answer);
+                ss >> json;
                 const string id = json["id"].asString();
                 const string straccount = json["acct"].asString() + "@" + acc.get_instance();
                 write_statistics(straccount, json);
@@ -155,7 +155,8 @@ int main(int argc, char *argv[])
                 ret = acc.get(Mastodon::API::v1::accounts_id_statuses, id, parameters, answer);
                 if (ret == 0)
                 {
-                    reader.parse(answer, json);
+                    ss.str(answer);
+                    ss >> json;
                     const string acct = json[0]["account"]["acct"].asString();
 
                     std::istringstream isslast(json[0]["created_at"].asString());
@@ -197,7 +198,8 @@ int main(int argc, char *argv[])
                     ret = acc.get_mentions(answer);
                     if (ret == 0)
                     {
-                        reader.parse(answer, json);
+                        ss.str(answer);
+                        ss >> json;
                         if (!json.empty())
                         {
                             const std::uint64_t lastid = std::stoull(json[0]["id"].asString());
