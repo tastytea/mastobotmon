@@ -40,8 +40,9 @@ const bool read_config()
     {
         json << file.rdbuf();
         file.close();
+        json >> config;
 
-        if (json >> config)
+        if (!config.isObject())
         {
             cerr << "ERROR: couldn't parse config file. Are you sure the JSON is well-formed?\n";
             return false;

@@ -97,8 +97,8 @@ const bool write_statistics(const string &straccount, Easy::Account &account_ent
 
         ss << std::put_time(&now_tm, "%Y-%m-%dT%T");
         output = ss.str() + ';';
-        output += account_entity.statuses_count() + ';';
-        output += account_entity.followers_count() + '\n';
+        output += std::to_string(account_entity.statuses_count()) + ';';
+        output += std::to_string(account_entity.followers_count()) + '\n';
         outfile.write(output.c_str(), output.length());
         outfile.close();
 
