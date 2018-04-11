@@ -41,9 +41,7 @@ const bool read_config()
         json << file.rdbuf();
         file.close();
 
-        Json::Reader reader;
-
-        if (!reader.parse(json, config))
+        if (json >> config)
         {
             cerr << "ERROR: couldn't parse config file. Are you sure the JSON is well-formed?\n";
             return false;
@@ -148,13 +146,11 @@ const bool add_account()
 
 const bool write_config()
 {
-    Json::StyledWriter writer;
-    const string output = writer.write(config);
-
     std::ofstream outfile(filepath);
     if (outfile.is_open())
     {
-        outfile.write(output.c_str(), output.length());
+        outfile.write(config.toStyledString().c_str(),
+                      config.toStyledString().length());
         outfile.close();
 
         return true;
