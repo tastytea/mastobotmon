@@ -27,6 +27,8 @@
 #include <regex>
 #include <memory>
 #include <jsoncpp/json/json.h>
+#include <mastodon-cpp/easy/entities/account.hpp>
+#include <mastodon-cpp/easy/entities/notification.hpp>
 #include "version.hpp"
 #include "mastobotmon.hpp"
 
@@ -35,10 +37,24 @@ using std::cerr;
 using std::cin;
 using std::string;
 using std::uint16_t;
+using Mastodon::Easy;
+using std::chrono::system_clock;
 
 Json::Value config; // Declared in mastobotmon.hpp
 
-const bool write_mentions(const string &straccount, Json::Value &mentions)
+// Transform time_point into a string with the universal time
+const string get_universal_time(const system_clock::time_point &timepoint)
+{
+    std::time_t time = system_clock::to_time_t(timepoint);
+    std::tm *timeinfo = std::gmtime(&time);
+    char buffer[9];
+
+    std::strftime(buffer, 9, "%T", timeinfo);
+
+    return buffer;
+}
+
+const bool write_mentions(const string &straccount, std::vector<std::shared_ptr<Easy::Notification>> &mentions)
 {
     const string filepath = config["data_dir"].asString() + "/mentions_" + straccount + ".csv";
     const std::regex restrip("<[^>]*>");
@@ -47,12 +63,12 @@ const bool write_mentions(const string &straccount, Json::Value &mentions)
     if (outfile.is_open())
     {
         string output;
-        for (auto &mention : mentions)
+        for (std::shared_ptr<Easy::Notification> &mention : mentions)
         {
-            output = mention["status"]["account"]["acct"].asString() + ';';
-            output += mention["status"]["created_at"].asString() + ';';
-            output += mention["status"]["content"].asString() + ';';
-            output += mention["status"]["url"].asString() + '\n';
+            output = mention->status().account().acct() + ';';
+            output += get_universal_time(mention->status().created_at()) + ';';
+            output += mention->status().content() + ';';
+            output += mention->status().url() + '\n';
             output = std::regex_replace(output, restrip, "");
             outfile.write(output.c_str(), output.length());
         }
@@ -66,7 +82,7 @@ const bool write_mentions(const string &straccount, Json::Value &mentions)
     return false;
 }
 
-const bool write_statistics(const string &straccount, Json::Value &account_json)
+const bool write_statistics(const string &straccount, Easy::Account &account_entity)
 {
     const string filepath = config["data_dir"].asString() + "/statistics_" + straccount + ".csv";
 
@@ -81,8 +97,8 @@ const bool write_statistics(const string &straccount, Json::Value &account_json)
 
         ss << std::put_time(&now_tm, "%Y-%m-%dT%T");
         output = ss.str() + ';';
-        output += account_json["statuses_count"].asString() + ';';
-        output += account_json["followers_count"].asString() + '\n';
+        output += account_entity.statuses_count() + ';';
+        output += account_entity.followers_count() + '\n';
         outfile.write(output.c_str(), output.length());
         outfile.close();
 
@@ -143,12 +159,10 @@ int main(int argc, char *argv[])
                     cerr << "Counter will reset at " << acc->get_header("X-RateLimit-Reset") << '\n';
                     return 2;
                 }
-                Json::Value json;
-                std::stringstream ss(answer);
-                ss >> json;
-                const string id = json["id"].asString();
-                const string straccount = json["acct"].asString() + "@" + acc->get_instance();
-                write_statistics(straccount, json);
+                Easy::Account account_entity(answer);
+                const string id = std::to_string(account_entity.id());
+                const string straccount = account_entity.acct() + "@" + acc->get_instance();
+                write_statistics(straccount, account_entity);
 
                 Account::parametermap parameters(
                 {
@@ -157,17 +171,10 @@ int main(int argc, char *argv[])
                 ret = acc->get(Mastodon::API::v1::accounts_id_statuses, id, parameters, answer);
                 if (ret == 0)
                 {
-                    ss.str(answer);
-                    ss >> json;
-                    const string acct = json[0]["account"]["acct"].asString();
-
-                    std::istringstream isslast(json[0]["created_at"].asString());
-                    struct std::tm tm = {0};
-                    isslast >> std::get_time(&tm, "%Y-%m-%dT%T");
-                    std::time_t time = timegm(&tm);
-
+                    account_entity.from_string(answer);
+                    const string acct = account_entity.acct();
                     const auto now = std::chrono::system_clock::now();
-                    const auto last = std::chrono::system_clock::from_time_t(time);
+                    const auto last = account_entity.created_at();
                     auto elapsed = std::chrono::duration_cast<std::chrono::minutes>(now - last);
 
                     if (elapsed.count() > acc->get_minutes())
@@ -200,14 +207,17 @@ int main(int argc, char *argv[])
                     ret = acc->get_mentions(answer);
                     if (ret == 0)
                     {
-                        ss.str(answer);
-                        ss >> json;
-                        if (!json.empty())
+                        std::vector<std::shared_ptr<Easy::Notification>> notifications;
+                        for (const string &str : Easy::json_array_to_vector(answer))
                         {
-                            const std::uint64_t lastid = std::stoull(json[0]["id"].asString());
+                            notifications.push_back(std::make_shared<Easy::Notification>(str));
+                        }
+                        if (!notifications.empty())
+                        {
+                            const std::uint64_t lastid = notifications[0]->id();
                             acc->set_last_mention_id(lastid);
                             config["accounts"][straccount]["last_mention"] = lastid;
-                            write_mentions(straccount, json);
+                            write_mentions(straccount, notifications);
                         }
                     }
                 }

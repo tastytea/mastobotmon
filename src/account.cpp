@@ -28,7 +28,7 @@ using std::string;
 using std::uint16_t;
 
 Account::Account(const string &instance, const string &access_token)
-: API(instance, access_token)
+: Easy(instance, access_token)
 , _minutes(0)
 , _last_mention_id(0)
 {
