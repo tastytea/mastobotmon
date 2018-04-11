@@ -25,6 +25,7 @@
 #include <iomanip>  // get_time
 #include <fstream>
 #include <regex>
+#include <memory>
 #include <jsoncpp/json/json.h>
 #include "version.hpp"
 #include "mastobotmon.hpp"
@@ -108,7 +109,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    std::vector<Account> accounts;
+    std::vector<std::shared_ptr<Account>> accounts;
 
     for (auto it = config["accounts"].begin(); it != config["accounts"].end(); ++it)
     {
@@ -116,43 +117,44 @@ int main(int argc, char *argv[])
         string instance = it.name();
         instance = instance.substr(instance.find('@') + 1);
 
-        Account *acc = new Account(instance, (*it)["access_token"].asString());
+        std::shared_ptr<Account> acc(std::make_shared<Account>(instance, (*it)["access_token"].asString()));
+        //Account *acc = new Account(instance, (*it)["access_token"].asString());
         acc->set_useragent("mastobotmon/" + string(global::version));
         acc->set_minutes((*it)["minutes"].asUInt());
         if (!(*it)["last_mention"].empty())
         {
             acc->set_last_mention_id((*it)["last_mention"].asUInt64());
         }
-        accounts.push_back(*acc);
+        accounts.push_back(acc);
     }
 
     if (config["mode"] == "cron")
     {
-        for (Account &acc : accounts)
+        for (std::shared_ptr<Account> &acc : accounts)
         {
             std::string answer;
-            uint16_t ret = acc.get(Mastodon::API::v1::accounts_verify_credentials, answer);
+            uint16_t ret = acc->get(Mastodon::API::v1::accounts_verify_credentials, answer);
             if (ret == 0)
             {
-                if (!acc.get_header("X-RateLimit-Remaining").empty() &&
-                    std::stoi(acc.get_header("X-RateLimit-Remaining")) < 2)
+                if (!acc->get_header("X-RateLimit-Remaining").empty() &&
+                    std::stoi(acc->get_header("X-RateLimit-Remaining")) < 2)
                 {
                     cerr << "ERROR: Reached limit of API calls.\n";
-                    cerr << "Counter will reset at " << acc.get_header("X-RateLimit-Reset") << '\n';
+                    cerr << "Counter will reset at " << acc->get_header("X-RateLimit-Reset") << '\n';
                     return 2;
                 }
                 Json::Value json;
                 std::stringstream ss(answer);
                 ss >> json;
                 const string id = json["id"].asString();
-                const string straccount = json["acct"].asString() + "@" + acc.get_instance();
+                const string straccount = json["acct"].asString() + "@" + acc->get_instance();
                 write_statistics(straccount, json);
 
                 Account::parametermap parameters(
                 {
                     { "limit", { "1" } }
                 });
-                ret = acc.get(Mastodon::API::v1::accounts_id_statuses, id, parameters, answer);
+                ret = acc->get(Mastodon::API::v1::accounts_id_statuses, id, parameters, answer);
                 if (ret == 0)
                 {
                     ss.str(answer);
@@ -168,7 +170,7 @@ int main(int argc, char *argv[])
                     const auto last = std::chrono::system_clock::from_time_t(time);
                     auto elapsed = std::chrono::duration_cast<std::chrono::minutes>(now - last);
 
-                    if (elapsed.count() > acc.get_minutes())
+                    if (elapsed.count() > acc->get_minutes())
                     {
                         uint16_t minutes = elapsed.count();
                         std::uint8_t hours = 0;
@@ -195,7 +197,7 @@ int main(int argc, char *argv[])
                         cout << std::to_string(minutes) << " minutes.\n";
                     }
 
-                    ret = acc.get_mentions(answer);
+                    ret = acc->get_mentions(answer);
                     if (ret == 0)
                     {
                         ss.str(answer);
@@ -203,7 +205,7 @@ int main(int argc, char *argv[])
                         if (!json.empty())
                         {
                             const std::uint64_t lastid = std::stoull(json[0]["id"].asString());
-                            acc.set_last_mention_id(lastid);
+                            acc->set_last_mention_id(lastid);
                             config["accounts"][straccount]["last_mention"] = lastid;
                             write_mentions(straccount, json);
                         }
