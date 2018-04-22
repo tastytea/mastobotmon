@@ -156,7 +156,8 @@ int main(int argc, char *argv[])
                     std::stoi(acc->get_header("X-RateLimit-Remaining")) < 2)
                 {
                     cerr << "ERROR: Reached limit of API calls.\n";
-                    cerr << "Counter will reset at " << acc->get_header("X-RateLimit-Reset") << '\n';
+                    cerr << "Counter will reset at " << acc->get_header("X-RateLimit-Reset")
+                         << '\n';
                     return 2;
                 }
                 Easy::Account account_entity(answer);
@@ -166,15 +167,15 @@ int main(int argc, char *argv[])
 
                 Account::parametermap parameters(
                 {
+                    { "id", { id } },
                     { "limit", { "1" } }
                 });
-                ret = acc->get(Mastodon::API::v1::accounts_id_statuses, id, parameters, answer);
+                ret = acc->get(Mastodon::API::v1::accounts_id_statuses, parameters, answer);
                 if (ret == 0)
                 {
-                    account_entity.from_string(answer);
-                    const string acct = account_entity.acct();
+                    const Easy::Status status(answer);
                     const auto now = std::chrono::system_clock::now();
-                    const auto last = account_entity.created_at();
+                    const auto last = status.created_at();
                     auto elapsed = std::chrono::duration_cast<std::chrono::minutes>(now - last);
 
                     if (elapsed.count() > acc->get_minutes())
@@ -192,7 +193,7 @@ int main(int argc, char *argv[])
                             minutes -= 60;
                             hours += 1;
                         }
-                        cout << "ALERT: " << acct << " is inactive since ";
+                        cout << "ALERT: " << account_entity.acct() << " is inactive since ";
                         if (days > 0)
                         {
                             cout << std::to_string(days) << " days, ";
