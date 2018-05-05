@@ -50,7 +50,6 @@ const string get_access_token(const string &account);
 const bool add_account();
 const bool write_config();
 
-const string get_universal_time(const system_clock::time_point &timepoint);
 const bool write_mentions(const string &straccount,
                           std::vector<std::shared_ptr<Mastodon::Easy::Notification>> &mentions);
 const bool write_statistics(const string &straccount, Json::Value &account_json);

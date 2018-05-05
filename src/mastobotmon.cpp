@@ -42,18 +42,6 @@ using std::chrono::system_clock;
 
 Json::Value config; // Declared in mastobotmon.hpp
 
-// Transform time_point into a string with the universal time
-const string get_universal_time(const system_clock::time_point &timepoint)
-{
-    std::time_t time = system_clock::to_time_t(timepoint);
-    std::tm *timeinfo = std::gmtime(&time);
-    char buffer[9];
-
-    std::strftime(buffer, 9, "%T", timeinfo);
-
-    return buffer;
-}
-
 const bool write_mentions(const string &straccount, std::vector<std::shared_ptr<Easy::Notification>> &mentions)
 {
     const string filepath = config["data_dir"].asString() + "/mentions_" + straccount + ".csv";
@@ -66,7 +54,7 @@ const bool write_mentions(const string &straccount, std::vector<std::shared_ptr<
         for (std::shared_ptr<Easy::Notification> &mention : mentions)
         {
             output = mention->status().account().acct() + ';';
-            output += get_universal_time(mention->status().created_at()) + ';';
+            output += Easy::strtime_utc(mention->status().created_at(), "%T") + ';';
             output += mention->status().content() + ';';
             output += mention->status().url() + '\n';
             output = std::regex_replace(output, restrip, "");
