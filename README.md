@@ -7,14 +7,14 @@
  * Tested OS: Linux
  * C++ compiler (tested: gcc 6.4, clang 5.0)
  * [cmake](https://cmake.org/) (tested: 3.9.6)
- * [mastodon-cpp](https://git.schlomp.space/tastytea/mastodon-cpp) (at least: 0.11.0)
+ * [mastodon-cpp](https://schlomp.space/tastytea/mastodon-cpp) (at least: 0.11.0)
  * [jsoncpp](https://github.com/open-source-parsers/jsoncpp) (tested: 1.8.1)
 
 ## Get sourcecode
 
 ### Development version
 
-    git clone https://git.schlomp.space/tastytea/mastobotmon.git
+    git clone https://schlomp.space/tastytea/mastobotmon.git
 
 ## Compile
 
@@ -40,7 +40,7 @@ minutes, it prints an alert to stdout.
 
 ## Error codes
 
-Same as [mastodon-cpp](https://git.schlomp.space/tastytea/mastodon-cpp/src/branch/master/README.md#error-codes), plus:
+Same as [mastodon-cpp](https://schlomp.space/tastytea/mastodon-cpp/src/branch/master/README.md#error-codes), plus:
 
 |      Code | Explanation                   |
 | --------: |:------------------------------|
