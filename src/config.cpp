@@ -101,7 +101,7 @@ const string get_access_token(const string &account)
     string access_token = "";
 
     ret = acc.register_app1("mastobotmon", "urn:ietf:wg:oauth:2.0:oob", "read",
-                            "https://github.com/tastytea/mastobotmon",
+                            "https://schlomp.space/tastytea/mastobotmon",
                             client_id, client_secret, url);
     if (ret == 0)
     {
