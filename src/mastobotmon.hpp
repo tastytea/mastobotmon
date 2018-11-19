@@ -36,7 +36,7 @@ class Account : public Mastodon::Easy
 public:
     explicit Account(const string &instance, const string &access_token);
     const void set_minutes(uint16_t minutes);
-    const uint16_t get_minutes() const;
+    const uint64_t get_minutes() const;
     const uint16_t get_mentions(string &answer);
     const void set_last_mention_id(const std::uint64_t &id);
 

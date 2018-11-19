@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.7)
 project (mastobotmon
-         VERSION 0.3.12
+         VERSION 0.3.13
          LANGUAGES CXX)
 
 include(GNUInstallDirs)
